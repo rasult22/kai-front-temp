@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL, INIT_DATA } from "./auth";
 import WebApp from "@twa-dev/sdk";
+import { PROTOTYPE_MODE } from "@/prototype";
+import * as MockQueries from "@/prototype/mock-queries";
 
 export type User = {
   id: number;
@@ -19,7 +21,7 @@ export type User = {
   unique_url_id: string;
 };
 
-export const useUserData =() => useQuery<User>({
+const _useUserDataReal =() => useQuery<User>({
   queryKey: ['user_data'],
   queryFn: async () => {
     const response = await fetch(`${API_BASE_URL}api/clients`, {
@@ -35,6 +37,8 @@ export const useUserData =() => useQuery<User>({
   }
 })
 
+export const useUserData = PROTOTYPE_MODE ? MockQueries.useUserData : _useUserDataReal;
+
 export interface UpdateUserData {
   email?: string;
   fullname?: string;
@@ -48,23 +52,26 @@ export interface UpdateUserData {
   photo_url?: string;
   mastermind_tags?: string
 }
-// Обновление пользователя (PUT, требует авторизации)
-export async function updateUser(userData: UpdateUserData) {
+
+async function _updateUserReal(userData: UpdateUserData) {
   const response = await fetch(`${API_BASE_URL}api/clients/`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `TMA ${WebApp.initData || INIT_DATA}`
     },
-    body: JSON.stringify(userData), // { fullname, email, phone }
+    body: JSON.stringify(userData),
   });
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || 'Update failed');
   }
-  return response.json(); // Обновлённые данные
+  return response.json();
 }
-export async function uploadFaceId(file: File) {
+
+export const updateUser = PROTOTYPE_MODE ? MockQueries.updateUser : _updateUserReal;
+
+async function _uploadFaceIdReal(file: File) {
   const formData = new FormData()
   formData.append('face_id', file)
   const response = await fetch(`${API_BASE_URL}api/clients/`, {
@@ -78,5 +85,7 @@ export async function uploadFaceId(file: File) {
     const error = await response.json();
     throw new Error(error.detail || 'Update failed');
   }
-  return response.json(); // Обновлённые данные
+  return response.json();
 }
+
+export const uploadFaceId = PROTOTYPE_MODE ? MockQueries.uploadFaceId : _uploadFaceIdReal;

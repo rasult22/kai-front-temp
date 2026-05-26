@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL, INIT_DATA } from "./auth";
 import WebApp from "@twa-dev/sdk";
+import { PROTOTYPE_MODE } from "@/prototype";
+import * as MockQueries from "@/prototype/mock-queries";
 
 
 export type NetwokingUser = {
@@ -15,7 +17,7 @@ export type NetwokingUser = {
 }
 
 const blackList = [
-  685668909, // Маргулан Сейсембай
+  685668909,
   420423224,
   551941839,
   302265530,
@@ -30,7 +32,7 @@ const blackList = [
   1387491864
 ]
 
-export const useNetworkingList = () => useQuery<NetwokingUser[]>({
+const _useNetworkingListReal = () => useQuery<NetwokingUser[]>({
   queryKey: ['netwoking_list'],
   queryFn: async () => {
     const response = await fetch(`${API_BASE_URL}api/clients?similar=1`, {
@@ -46,7 +48,10 @@ export const useNetworkingList = () => useQuery<NetwokingUser[]>({
     return data.filter(data => !blackList.includes(data.telegram_id) && data.participation_goal)
   }
 })
-export const useConnectedList = () => useQuery<{
+
+export const useNetworkingList = PROTOTYPE_MODE ? MockQueries.useNetworkingList : _useNetworkingListReal;
+
+const _useConnectedListReal = () => useQuery<{
   count: number,
   results: NetwokingUser[]
 }>({
@@ -65,8 +70,9 @@ export const useConnectedList = () => useQuery<{
   }
 })
 
+export const useConnectedList = PROTOTYPE_MODE ? MockQueries.useConnectedList : _useConnectedListReal;
 
-export const connectWithUser = (id: number) => {
+const _connectWithUserReal = (id: number) => {
   fetch(`${API_BASE_URL}api/clients/${id}/like/`,{
     method: 'POST',
     headers: {
@@ -77,3 +83,5 @@ export const connectWithUser = (id: number) => {
     })
   })
 }
+
+export const connectWithUser = PROTOTYPE_MODE ? MockQueries.connectWithUser : _connectWithUserReal;

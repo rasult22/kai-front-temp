@@ -1,3 +1,5 @@
+import { PROTOTYPE_MODE } from "@/prototype";
+import * as MockQueries from "@/prototype/mock-queries";
 
 const api_key_part1 = "sk_V2_";
 const api_key_part2 = "hgu_kuBMwAtXRFk_GA7akgCcy7";
@@ -101,7 +103,7 @@ type VideoStatusResponseData = {
   message: "Success"
 }
 
-export const createVideoInviteAndGetUrls = async (name: string, fire_and_forget: boolean = false): Promise<{ video_url: string; thumbnail_url: string}> => {
+const _createVideoInviteAndGetUrlsReal = async (name: string, fire_and_forget: boolean = false): Promise<{ video_url: string; thumbnail_url: string}> => {
   const createRes = await createVideoInvite(name);
   if (!createRes) {
     handleIntroductionVideoError()
@@ -146,8 +148,7 @@ export const createVideoInviteAndGetUrls = async (name: string, fire_and_forget:
 };
 
 
-// generate videos from user name. Use localStorage for state tracking if app is killed between requests
-export const handleIntroductionVideo = async (name: string) => {
+const _handleIntroductionVideoReal = async (name: string) => {
   // check if video is ready
   const video_url = localStorage.getItem(INTRO_VIDEO_URL_KEY);
   const thumbnail_url = localStorage.getItem(INTRO_VIDEO_THUMBNAIL_KEY);
@@ -208,3 +209,11 @@ const handleIntroductionVideoError = () => {
   localStorage.removeItem(INTRO_VIDEO_THUMBNAIL_KEY);
   localStorage.removeItem(INTRO_VIDEO_ID_KEY);
 }
+
+export const createVideoInviteAndGetUrls = PROTOTYPE_MODE
+  ? MockQueries.createVideoInviteAndGetUrls
+  : _createVideoInviteAndGetUrlsReal;
+
+export const handleIntroductionVideo = PROTOTYPE_MODE
+  ? MockQueries.handleIntroductionVideo
+  : _handleIntroductionVideoReal;

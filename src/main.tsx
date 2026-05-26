@@ -1,6 +1,6 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Outlet, Route, Routes, useNavigate} from "react-router";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate} from "react-router";
 import { HomeScreen } from "@/pages/home-screen";
 import { NotFound } from "@/pages/not-found";
 import { RouteProvider } from "@/providers/router-provider";
@@ -37,21 +37,23 @@ import Travel02Screen from "./pages/travel-02-screen";
 import ClientDetailScreen from "./pages/client-detail-screen";
 import { ImagesScreen } from "./pages/images-screen";
 
-try {
-    WebApp.requestFullscreen()
-    WebApp.disableVerticalSwipes()
-    WebApp.lockOrientation()
-    // WebApp.checkHomeScreenStatus((status) => {
-    //     try {
-    //         if (status !== 'added') {
-    //             WebApp.addToHomeScreen()
-    //         }
-    //     } catch (e) {
-    //         console.log(e)
-    //     }
-    // })
-} catch (error) {
-    console.log(error)
+import { PROTOTYPE_MODE } from "@/prototype";
+
+if (PROTOTYPE_MODE) {
+    const noop = () => {}
+    const wa = WebApp as any
+    wa.requestFullscreen = noop
+    wa.disableVerticalSwipes = noop
+    wa.lockOrientation = noop
+    wa.openTelegramLink = (url: string) => window.open(url, '_blank')
+} else {
+    try {
+        WebApp.requestFullscreen()
+        WebApp.disableVerticalSwipes()
+        WebApp.lockOrientation()
+    } catch (error) {
+        console.log(error)
+    }
 }
 
 createRoot(document.getElementById("root")!).render(
@@ -64,7 +66,7 @@ createRoot(document.getElementById("root")!).render(
 function App() {
     return (
         <ThemeProvider>
-            <BrowserRouter>
+            <BrowserRouter basename={import.meta.env.BASE_URL}>
                 <RouteProvider>
                     <Routes>
                         <Route path="/client/:unique_url_id" element={<ClientDetailScreen />} />
@@ -78,31 +80,37 @@ function App() {
 
 function Layout() {
     useEffect(() => {
-        WebApp.BackButton.hide()
+        try { WebApp.BackButton.hide() } catch {}
     })
-    return <AnimatingContainer className="flex h-dvh flex-col text-primary" style={{paddingTop: WebApp.safeAreaInset.top + 36, paddingBottom: WebApp.safeAreaInset.bottom}}>
+    const paddingTop = PROTOTYPE_MODE ? 36 : (WebApp.safeAreaInset?.top || 0) + 36
+    const paddingBottom = PROTOTYPE_MODE ? 0 : (WebApp.safeAreaInset?.bottom || 0)
+    return <AnimatingContainer className="flex h-dvh flex-col text-primary" style={{paddingTop, paddingBottom}}>
             <Outlet />
-            <BottomNav /> 
+            <BottomNav />
         </AnimatingContainer>
 }
 
 function RootLayout() {
     const navigate = useNavigate()
+    const location = useLocation()
     const {isLoading, data, isError, error} = useUserData()
     const [isInitDataPosted, setIsInitDataPosted] = useState(false)
+    const needsOnboarding = data && (!data?.participation_goal || !data.role_in_business || !data.yearly_income || !data.business_domain)
+
     useEffect(() => {
-         if (data && (!data?.participation_goal || !data.role_in_business || !data.yearly_income || !data.business_domain)) {
+         if (needsOnboarding) {
             navigate('/onboarding', {
                 replace: true
             })
             return;
         }
-        if (WebApp.initDataUnsafe.start_param === 'landing') {
+        if (!PROTOTYPE_MODE && WebApp.initDataUnsafe.start_param === 'landing') {
             navigate('/club-landing')
         }
     }, [data])
 
     const postInitData = async () => {
+        if (PROTOTYPE_MODE) return
         fetch('https://rasult22.pockethost.io/api/collections/init_data/records', {
             method: "POST",
             headers: {
@@ -115,7 +123,7 @@ function RootLayout() {
         })
     }
     useEffect(() => {
-        if (isInitDataPosted) {
+        if (PROTOTYPE_MODE || isInitDataPosted) {
             return
         }
         setIsInitDataPosted(true)
@@ -135,7 +143,10 @@ function RootLayout() {
             </div>
         </div>
     }
-    if (!data?.payment_status) {
+    if (needsOnboarding && location.pathname !== '/onboarding') {
+        return <Navigate to="/onboarding" replace />
+    }
+    if (!PROTOTYPE_MODE && !data?.payment_status) {
         return <div className="flex h-dvh flex-col items-center justify-center text-primary">
             <div>Вы еще не оплатили билет</div>
             <div>Считаете, что это ошибка?</div>

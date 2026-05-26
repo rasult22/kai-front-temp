@@ -53,7 +53,10 @@ export const getSessionStatus = (startTime: string, endTime: string, date: strin
   }
 }
 
-export const useSchedules = () => useQuery<ScheduleDay[]>({
+import { PROTOTYPE_MODE } from "@/prototype"
+import * as MockQueries from "@/prototype/mock-queries"
+
+const _useSchedulesReal = () => useQuery<ScheduleDay[]>({
   queryKey: ['schedules'],
   queryFn: async () => {
     const response = await fetch(`${API_BASE_URL}api/schedules/`, {
@@ -69,8 +72,9 @@ export const useSchedules = () => useQuery<ScheduleDay[]>({
   }
 })
 
+export const useSchedules = PROTOTYPE_MODE ? MockQueries.useSchedules : _useSchedulesReal;
 
-export const useSchedule = (id: number) => useQuery({
+const _useScheduleReal = (id: number) => useQuery({
   queryKey: ['schedule', id],
   queryFn: async () => {
     const response = await fetch(`${API_BASE_URL}api/schedules/${id}/`, {
@@ -85,3 +89,5 @@ export const useSchedule = (id: number) => useQuery({
     return await response.json()
   }
 })
+
+export const useSchedule = PROTOTYPE_MODE ? MockQueries.useSchedule : _useScheduleReal;

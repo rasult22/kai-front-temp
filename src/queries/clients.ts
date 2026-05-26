@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL } from "./auth";
+import { PROTOTYPE_MODE } from "@/prototype";
+import * as MockQueries from "@/prototype/mock-queries";
 
 export type Client = {
   id: number;
@@ -11,7 +13,7 @@ export type Client = {
   is_active: boolean;
 };
 
-export const useClientDetail = (unique_url_id: string) =>
+const _useClientDetailReal = (unique_url_id: string) =>
   useQuery<Client>({
     queryKey: ["client_detail", unique_url_id],
     queryFn: async () => {
@@ -28,3 +30,5 @@ export const useClientDetail = (unique_url_id: string) =>
     },
     enabled: !!unique_url_id,
   });
+
+export const useClientDetail = PROTOTYPE_MODE ? MockQueries.useClientDetail : _useClientDetailReal;

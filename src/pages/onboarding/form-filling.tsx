@@ -51,7 +51,7 @@ export default function FormFilling () {
     }
   })
   const nextStep = (step: 'name' | 'biz_info' | 'role' | 'incomes' | 'goal' | 'mastermind' | 'success' | 'loading') => {
-    WebApp.HapticFeedback.impactOccurred('medium');
+    try { WebApp.HapticFeedback.impactOccurred('medium') } catch {}
     setCurrentStep(step)
   }
   const finishForm = async (data: MastermindData) => {
@@ -666,7 +666,7 @@ function Success() {
     </div>
     <div className="flex flex-col gap-3">
       <Button onClick={() => {
-        WebApp.HapticFeedback.impactOccurred('medium');
+        try { WebApp.HapticFeedback.impactOccurred('medium') } catch {}
         queryClient.invalidateQueries({
           queryKey: ['user_data']
         })

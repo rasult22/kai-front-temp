@@ -10,45 +10,51 @@ import { DotsVertical, Download01, Eye, Loading03, Share06, Star06 } from "@unti
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { PROTOTYPE_MODE } from "@/prototype";
+import { useMockMyVideos, useMockFeedVideos } from "@/prototype/mock-queries";
+
 type VideoType = {
  url: string; name: string | null; date: string; thumbnail: string | null; record_id: string, public: boolean
 }
-export const AIVideoScreen = () => {
-    const [showVideoOptionsModal, setShowVideoOptionsModal] = useState<VideoType>();
-    const {isLoading, data: userData} = useUserData()
 
-    const {data, isLoading: isLoading2} = useQuery<{items:{
-        id: string,
-        date: string,
-        public: boolean,
-        style_name: string,
-        tg_id: string,
-        user: User,
-        video_thumbnail: string,
-        video_url: string
+const useMyVideos = (userData: User | undefined) => {
+    const realQuery = useQuery<{items:{
+        id: string, date: string, public: boolean, style_name: string,
+        tg_id: string, user: User, video_thumbnail: string, video_url: string
     }[]}>({
         queryKey: ['my_video'],
         queryFn: () => {
             return fetch(`https://rasult22.pockethost.io/api/collections/kai_videos/records?sort=-created&filter=tg_id='${WebApp.initDataUnsafe.user?.id || userData?.telegram_id}'`)
                .then(res => res.json())
-        }
+        },
+        enabled: !PROTOTYPE_MODE,
     })
-    const {data:feed, isLoading: isLoading3} = useQuery<{items: {
-        id: string,
-        date: string,
-        public: boolean,
-        style_name: string,
-        tg_id: string,
-        user: User,
-        video_thumbnail: string,
-        video_url: string
+    const mockQuery = useMockMyVideos()
+    return PROTOTYPE_MODE ? mockQuery : realQuery
+}
+
+const useFeedVideos = () => {
+    const realQuery = useQuery<{items: {
+        id: string, date: string, public: boolean, style_name: string,
+        tg_id: string, user: User, video_thumbnail: string, video_url: string
     }[]}>({
         queryKey: ['feed'],
         queryFn: () => {
             return fetch(`https://rasult22.pockethost.io/api/collections/kai_videos/records?sort=-created&filter=public=true`)
                 .then(res => res.json())
-        }
+        },
+        enabled: !PROTOTYPE_MODE,
     })
+    const mockQuery = useMockFeedVideos()
+    return PROTOTYPE_MODE ? mockQuery : realQuery
+}
+
+export const AIVideoScreen = () => {
+    const [showVideoOptionsModal, setShowVideoOptionsModal] = useState<VideoType>();
+    const {isLoading, data: userData} = useUserData()
+
+    const {data, isLoading: isLoading2} = useMyVideos(userData)
+    const {data:feed, isLoading: isLoading3} = useFeedVideos()
 
     if (isLoading || isLoading2 || isLoading3) {
         <div className="flex-1 overflow-auto flex flex-col text-primary pb-8 bg-bg-primary">

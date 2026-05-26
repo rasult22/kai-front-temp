@@ -8,12 +8,12 @@ import WebApp from "@twa-dev/sdk";
 import { useUserData } from "@/queries/user";
 
 export const OnboardingScreen = () => {
-  const [currentScreen, setCurrentScreen] = useState<'welcome' | 'form-filling' | 'info'>('welcome') 
-  const [insets, setInsets] = useState({top: WebApp.safeAreaInset.top, bottom: WebApp.safeAreaInset.bottom})
+  const [currentScreen, setCurrentScreen] = useState<'welcome' | 'form-filling' | 'info'>('welcome')
+  const [insets, setInsets] = useState({ top: WebApp.safeAreaInset?.top || 0, bottom: WebApp.safeAreaInset?.bottom || 0 })
 
   useEffect(() => {
     setTimeout(() => {
-      setInsets({top: WebApp.safeAreaInset.top, bottom: WebApp.safeAreaInset.bottom})
+      setInsets({ top: WebApp.safeAreaInset?.top || 0, bottom: WebApp.safeAreaInset?.bottom || 0 })
     }, 300)
   }, [])
     return (
@@ -124,8 +124,8 @@ export function PublicOferta ({onClose}: {onClose: () => void}) {
     animate={{opacity: 1, y: 0}}
     transition={{duration: 0.3}}
     style={{
-      paddingTop: WebApp.safeAreaInset.top + 36,
-      paddingBottom: WebApp.safeAreaInset.bottom
+      paddingTop: (WebApp.safeAreaInset?.top || 0) + 36,
+      paddingBottom: (WebApp.safeAreaInset?.bottom || 0)
     }}
   >
     <div className="flex-1 overflow-auto break-word">
@@ -284,8 +284,8 @@ export function Confidentials ({onClose}: {onClose: () => void}) {
     animate={{opacity: 1, y: 0}}
     transition={{duration: 0.3}}
     style={{
-      paddingTop: WebApp.safeAreaInset.top + 36,
-      paddingBottom: WebApp.safeAreaInset.bottom
+      paddingTop: (WebApp.safeAreaInset?.top || 0) + 36,
+      paddingBottom: (WebApp.safeAreaInset?.bottom || 0)
     }}
   >
     <div className="flex-1 overflow-auto break-word">

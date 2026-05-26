@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL, INIT_DATA } from "./auth";
 import WebApp from "@twa-dev/sdk";
+import { PROTOTYPE_MODE } from "@/prototype";
+import * as MockQueries from "@/prototype/mock-queries";
 
 
-
-export const useQuestions = (session_id: number) => useQuery<Question[]>({
+const _useQuestionsReal = (session_id: number) => useQuery<Question[]>({
   queryKey: ["questions", session_id],
   queryFn: async () => {
     const response = await fetch(`${API_BASE_URL}api/sessions/${session_id}/questions/`, {
@@ -19,6 +20,8 @@ export const useQuestions = (session_id: number) => useQuery<Question[]>({
     return await response.json()
   },
 });
+
+export const useQuestions = PROTOTYPE_MODE ? MockQueries.useQuestions : _useQuestionsReal;
 
 export type Question = {
   "id": number,
@@ -35,7 +38,7 @@ export type Question = {
 }
 
 
-export const postQuestion = async (message: string, session_id: number) => {
+const _postQuestionReal = async (message: string, session_id: number) => {
   const response = await fetch(`${API_BASE_URL}api/sessions/${session_id}/questions/`, {
       method: 'POST',
       headers: {
@@ -52,7 +55,9 @@ export const postQuestion = async (message: string, session_id: number) => {
     return await response.json()
 }
 
-export const voteQuestion = async (question_id: number) => {
+export const postQuestion = PROTOTYPE_MODE ? MockQueries.postQuestion : _postQuestionReal;
+
+const _voteQuestionReal = async (question_id: number) => {
   const response = await fetch(`${API_BASE_URL}api/questions/${question_id}/vote/`, {
       method: 'POST',
       headers: {
@@ -65,3 +70,5 @@ export const voteQuestion = async (question_id: number) => {
     }
     return await response.json()
 }
+
+export const voteQuestion = PROTOTYPE_MODE ? MockQueries.voteQuestion : _voteQuestionReal;

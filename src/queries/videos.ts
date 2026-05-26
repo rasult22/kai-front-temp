@@ -1,4 +1,7 @@
-export const setPublic = async (record_id: string, value: boolean) => {
+import { PROTOTYPE_MODE } from "@/prototype"
+import * as MockQueries from "@/prototype/mock-queries"
+
+const _setPublicReal = async (record_id: string, value: boolean) => {
   const data = new FormData()
   data.append('public', value ? 'true' : 'false')
   fetch(`https://rasult22.pockethost.io/api/collections/kai_videos/records/${record_id}`, {
@@ -7,7 +10,9 @@ export const setPublic = async (record_id: string, value: boolean) => {
   })
 }
 
-export const createVideoRecord = async (payload: {
+export const setPublic = PROTOTYPE_MODE ? MockQueries.setPublic : _setPublicReal;
+
+const _createVideoRecordReal = async (payload: {
   "user": any,
   "tg_id": string | number,
   "video_url": string,
@@ -25,3 +30,5 @@ export const createVideoRecord = async (payload: {
     }).then(x => x.json())
   return record
 }
+
+export const createVideoRecord = PROTOTYPE_MODE ? MockQueries.createVideoRecord : _createVideoRecordReal;
